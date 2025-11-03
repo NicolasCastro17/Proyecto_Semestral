@@ -1,0 +1,59 @@
+# ============================================================================
+# ARCHIVOS GENERADOS AUTOMÁTICAMENTE POR PYTHON
+# ============================================================================
+
+# Carpeta con archivos compilados que Python crea automáticamente al ejecutar el código
+# Se regenera cada vez que ejecutas el proyecto, no es necesario subirlo al repositorio
+__pycache__/
+
+# Archivos compilados de Python (.pyc)
+# Python los crea para acelerar la ejecución, pero se regeneran automáticamente
+*.pyc
+*.pyo
+*.pyd
+
+# ============================================================================
+# BASE DE DATOS DEL PROYECTO
+# ============================================================================
+
+# Archivo de base de datos SQLite donde se guardan los usuarios y órdenes de compra
+# Se excluye porque contiene datos locales y cada desarrollador tendrá sus propios datos
+database/proyecto.db
+
+# Archivos temporales que SQLite crea durante las operaciones
+database/*.db-journal
+database/*.db-wal
+database/*.db-shm
+
+# ============================================================================
+# ARCHIVOS DEL SISTEMA OPERATIVO
+# ============================================================================
+
+# Archivos que Windows crea automáticamente
+Thumbs.db
+desktop.ini
+
+# Archivos que macOS crea automáticamente  
+.DS_Store
+
+# ============================================================================
+# CONFIGURACIÓN DE EDITORES
+# ============================================================================
+
+# Configuración personal de Visual Studio Code
+.vscode/
+
+# Configuración personal de PyCharm/IntelliJ
+.idea/
+
+# ============================================================================
+# ARCHIVOS TEMPORALES Y DE RESPALDO
+# ============================================================================
+
+# Archivos temporales diversos
+*.tmp
+*.temp
+*.bak
+
+# Logs de la aplicación
+*.log

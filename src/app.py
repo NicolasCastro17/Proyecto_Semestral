@@ -12,7 +12,7 @@ from pathlib import Path
 from login import usuarioDefault, login
 
 # menú principal del sistema.
-from menu import menu
+from menu import Menu
 
 # Librería estándar
 # Se usa para conectarse a SQLite y ejecutar consultas en la base de datos.
@@ -77,7 +77,7 @@ def main():
         print("No se pudo iniciar sesión. Saliendo…")
         return
     # Paso 4: abre el menú principal del sistema
-    menu(usuario, db)
+    Menu(usuario, db)
 
 
 # Esto se ejecuta solo si corremos este archivo directamente
