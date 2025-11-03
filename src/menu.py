@@ -23,3 +23,4 @@ def Menu(usuario: str, db: Path):
             break
         else:
             print("Opción inválida.\n")
+#menu creado
