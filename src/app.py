@@ -12,26 +12,19 @@ from pathlib import Path
 from login import usuarioDefault, login
 
 # menú principal del sistema.
-from menu import menu
+from menu import Menu
 
 # Librería estándar
 # Se usa para conectarse a SQLite y ejecutar consultas en la base de datos.
 import sqlite3
 
 
-# Definimos la ruta hacia la base de datos:
-# /database/proyecto.db
-# __file__ ruta del archivo actual (src/app.py).
-# .parents[1] sube un nivel (raíz del proyecto).
-# "database/proyecto.db" subcarpeta database con el archivo de la BD.
-db = (Path(__file__).resolve().parents[1] / "database" / "proyecto.db")
-
+# Definimos la ruta hacia la base de datos
+DB_PATH = Path(__file__).resolve().parents[1] / "database" / "proyecto.db"
 
 def conectar_db():
-    # Asegura que la carpeta "database/" exista
-    db.parent.mkdir(parents=True, exist_ok=True)
-    # Devuelve una conexión a SQLite usando esa ruta
-    return sqlite3.connect(db)
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    return sqlite3.connect(DB_PATH)
 
 
 def iniciarBD():
@@ -40,16 +33,19 @@ def iniciarBD():
         c = conn.cursor()
 
         # Tabla de usuarios: guarda nombre de usuario y hash de contraseña
-        c.execute("""
+        c.execute(
+            """
             CREATE TABLE IF NOT EXISTS usuarios (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL
             );
-        """)
+         """
+        )
 
         # Tabla de órdenes de compra: guarda datos de cliente y sus productos
-        c.execute("""
+        c.execute(
+            """
             CREATE TABLE IF NOT EXISTS ordenes_compra (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 numero TEXT NOT NULL,
@@ -58,28 +54,52 @@ def iniciarBD():
                 telefono TEXT NOT NULL,
                 comuna TEXT NOT NULL,
                 region TEXT NOT NULL,
-                items_json TEXT NOT NULL,   -- JSON: [{producto, precio}]
+                items_json TEXT NOT NULL,
                 total REAL NOT NULL,
-                estado TEXT NOT NULL DEFAULT 'OC_CREADA'  -- OC_CREADA | FACTURADA | DESPACHADA
+                estado TEXT NOT NULL DEFAULT 'OC_CREADA'
             );
-        """)
+            """
+        )
+
+        c.execute(
+            """
+            CREATE TABLE IF NOT EXISTS facturas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                orden_id INTEGER NOT NULL UNIQUE,
+                fecha_emision TEXT NOT NULL,
+                monto_neto REAL NOT NULL,
+                monto_iva REAL NOT NULL,
+                monto_total REAL NOT NULL,
+                estado_envio TEXT NOT NULL DEFAULT 'PENDIENTE',
+                FOREIGN KEY (orden_id) REFERENCES ordenes_compra (id)
+            );
+            """
+        )
+
+        c.execute(
+            """
+            CREATE TABLE IF NOT EXISTS envios (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                factura_id INTEGER NOT NULL,
+                fecha_envio TEXT NOT NULL,
+                detalle_envio TEXT,
+                estado TEXT NOT NULL DEFAULT 'DESPACHADO',
+                FOREIGN KEY (factura_id) REFERENCES facturas (id)
+            );
+           """
+        )
         conn.commit()
 
 
 def main():
-    # Paso 1: inicializa la base de datos y tablas
-    iniciarBD()
-    # Paso 2: asegura que exista usuario admin/admin123
-    usuarioDefault(db)
-    # Paso 3: pide login al usuario
-    usuario = login(db)
+    usuarioDefault(DB_PATH)
+    usuario = login(DB_PATH)
     if not usuario:
         print("No se pudo iniciar sesión. Saliendo…")
         return
     # Paso 4: abre el menú principal del sistema
-    menu(usuario, db)
+    Menu(usuario, DB_PATH)
 
-
-# Esto se ejecuta solo si corremos este archivo directamente
 if __name__ == "__main__":
+    iniciarBD()
     main()
