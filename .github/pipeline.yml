@@ -1,0 +1,71 @@
+# .github/workflows/vercel-cicd.yml
+
+name: Pipeline CI/CD: Pruebas y Despliegue en Vercel (RF6)
+
+# Disparadores del pipeline
+on:
+  push:
+    branches:
+      - main  # Despliegue a Producción al hacer push a main
+  pull_request:
+    branches:
+      - main  # Despliegue de Previsualización (Preview) en cada PR
+
+env:
+  # Variables cargadas desde los Secretos de GitHub
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  ci_validation:
+    name: 🧪 CI - Instalación y Pruebas
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 1. Checkout del Código
+        uses: actions/checkout@v4
+
+      - name: 2. Configurar Node.js (Requerido por Vercel)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 3. Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: 4. Instalar Dependencias del Proyecto
+        run: |
+          echo "Instalando dependencias de Node.js..."
+          if [ -f package.json ]; then npm install; fi
+          echo "Instalando dependencias de Python..."
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          
+      - name: 5. Ejecutar Pruebas (Validación RF6)
+        run: |
+          echo "Ejecutando pruebas unitarias..."
+          npm test
+          python -m pytest
+
+      - name: 6. Construir el Proyecto (Build)
+        run: npm run build
+        
+  deploy_cd:
+    name: 🚀 CD - Despliegue en Vercel
+    runs-on: ubuntu-latest
+    
+    # Solo se ejecuta si el job 'ci_validation' fue exitoso
+    needs: ci_validation 
+    
+    steps:
+      - name: 1. Checkout del Código
+        uses: actions/checkout@v4
+        
+      - name: 2. Despliegue Automatizado a Vercel
+        uses: vercel/actions@v1
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          # El argumento --prod se añade SÓLO si la rama es 'main' (Producción)
+          vercel-args: ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
