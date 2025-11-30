@@ -45,22 +45,6 @@ jobs:
       - name: 5. Construir el Proyecto (Opcional para Python Serverless)
         run: echo "Build de Python omitido/personalizado para Vercel."
         
-  deploy_cd:
-    name: 🚀 CD - Despliegue en Vercel
-    runs-on: ubuntu-latest
-    
-    # Se ejecuta solo si las pruebas de Python pasan
-    needs: ci_validation 
-    
-    steps:
-      - name: 1. Checkout del Código
-        uses: actions/checkout@v4
-        
-      - name: 2. Despliegue Automatizado a Vercel
-        uses: vercel/actions@v3
-        with: 
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          # El argumento --prod se añade SÓLO si la rama es 'main'
-        env:
-          VERCEL_PROJECT_NAME: proyecto-semestral
-          vercel-args: ${{ github.ref == 'refs/heads/main' && '--prod --yes' || '--yes' }}
+      - name: Notify
+        run: |
+          echo "Pipeline completado. Resultado: $GITHUB_WORKFLOW"
