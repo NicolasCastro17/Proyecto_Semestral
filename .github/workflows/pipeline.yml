@@ -30,13 +30,11 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           pip install pytest
 
-      - name: 3.5. Configurar PYTHONPATH para Tests
-        run: echo "PYTHONPATH=$GITHUB_WORKSPACE:$PYTHONPATH" >> $GITHUB_ENV    
-        
+
       - name: 4. Ejecutar Pruebas (Validación RF6)
         run: |
           echo "Ejecutando pruebas unitarias de Python..."
-          python -m pytest 
+          pytest 
 
       - name: 5. Construir el Proyecto (Opcional para Python Serverless)
         run: echo "Build de Python omitido/personalizado para Vercel."
