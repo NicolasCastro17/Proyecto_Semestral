@@ -3,55 +3,7 @@ import pytest
 from pathlib import Path
 from datetime import datetime
 from unittest.mock import MagicMock
-
-def conectar_db(db: sqlite3.Connection):
-    """Simula la función de conexión, usando la conexión de la fixture."""
-    return db
-
-def calcular_iva(monto_neto: float) -> float:
-    return monto_neto * 0.19
-
-def calcular_total_bruto(monto_neto: float) -> float:
-    return monto_neto * 1.19
-
-
-def emitir_factura(db: Path):
-    orden_id = input("ID de la orden a facturar: ").strip() 
-    
-    with conectar_db(db) as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT total, estado FROM ordenes_compra WHERE id = ?", (orden_id,))
-        orden = cursor.fetchone()
-
-        if not orden:
-            print("Orden no encontrada.\n")
-            return
-        monto_neto_total, estado = orden
-        
-        if estado != "OC_CREADA":
-            print("La orden ya fue facturada o despachada.\n")
-            return
-
-        cursor.execute("SELECT id FROM facturas WHERE orden_id = ?", (orden_id,))
-        if cursor.fetchone():
-            print("La orden ya tiene una factura emitida.\n")
-            return
-        
-        monto_iva = calcular_iva(monto_neto_total)
-        monto_total = calcular_total_bruto(monto_neto_total)
-
-        fecha_actual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cursor.execute(
-            """
-            INSERT INTO facturas (orden_id, fecha_emision, monto_neto, monto_iva, monto_total, estado_envio)
-            VALUES (?, ?, ?, ?, ?, 'PENDIENTE')
-            """,
-            (orden_id, fecha_actual, monto_neto_total, monto_iva, monto_total),
-        )
-        
-        cursor.execute("UPDATE ordenes_compra SET estado = 'FACTURADA' WHERE id = ?", (orden_id,))
-        conn.commit()
-
+from factura import emitir_factura
 
 @pytest.fixture
 def setup_db():
