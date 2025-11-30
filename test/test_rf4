@@ -1,0 +1,101 @@
+import sqlite3
+import pytest
+from pathlib import Path
+from datetime import datetime
+from unittest.mock import MagicMock
+
+def conectar_db(db: sqlite3.Connection):
+    """Simula la función de conexión, usando la conexión de la fixture."""
+    return db
+
+def calcular_iva(monto_neto: float) -> float:
+    return monto_neto * 0.19
+
+def calcular_total_bruto(monto_neto: float) -> float:
+    return monto_neto * 1.19
+
+
+def emitir_factura(db: Path):
+    orden_id = input("ID de la orden a facturar: ").strip() 
+    
+    with conectar_db(db) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT total, estado FROM ordenes_compra WHERE id = ?", (orden_id,))
+        orden = cursor.fetchone()
+
+        if not orden:
+            print("Orden no encontrada.\n")
+            return
+        monto_neto_total, estado = orden
+        
+        if estado != "OC_CREADA":
+            print("La orden ya fue facturada o despachada.\n")
+            return
+
+        cursor.execute("SELECT id FROM facturas WHERE orden_id = ?", (orden_id,))
+        if cursor.fetchone():
+            print("La orden ya tiene una factura emitida.\n")
+            return
+        
+        monto_iva = calcular_iva(monto_neto_total)
+        monto_total = calcular_total_bruto(monto_neto_total)
+
+        fecha_actual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cursor.execute(
+            """
+            INSERT INTO facturas (orden_id, fecha_emision, monto_neto, monto_iva, monto_total, estado_envio)
+            VALUES (?, ?, ?, ?, ?, 'PENDIENTE')
+            """,
+            (orden_id, fecha_actual, monto_neto_total, monto_iva, monto_total),
+        )
+        
+        cursor.execute("UPDATE ordenes_compra SET estado = 'FACTURADA' WHERE id = ?", (orden_id,))
+        conn.commit()
+
+
+@pytest.fixture
+def setup_db():
+    """Crea una base de datos SQLite en memoria con una orden lista para facturar."""
+    conn = sqlite3.connect(':memory:') 
+    cursor = conn.cursor()
+
+
+    cursor.execute("CREATE TABLE ordenes_compra (id TEXT PRIMARY KEY, total REAL, estado TEXT)")
+    cursor.execute("CREATE TABLE facturas (id INTEGER PRIMARY KEY, orden_id TEXT, fecha_emision TEXT, monto_neto REAL, monto_iva REAL, monto_total REAL, estado_envio TEXT)")
+
+
+    cursor.execute("INSERT INTO ordenes_compra VALUES ('ORD-001', 100.00, 'OC_CREADA')")
+    conn.commit()
+    
+    yield conn # Retorna la conexión para ser usada en el test
+    conn.close()
+
+
+#Test
+
+def test_emision_factura_exitosa(setup_db, monkeypatch):
+    """
+    Verifica que la función emitir_factura registre la factura
+    y actualice el estado de la orden a 'FACTURADA' (RF4).
+    """
+    
+    # 1. Simular la entrada del usuario ('input') para la orden 'ORD-001'
+    monkeypatch.setattr('builtins.input', lambda _: 'ORD-001')
+    
+    # 2. Ejecutar la función con la DB temporal
+    emitir_factura(setup_db)
+    
+    # 3. VERIFICAR RESULTADOS EN LA DB
+    cursor = setup_db.cursor()
+    
+    # A. La orden debe cambiar a estado 'FACTURADA'
+    cursor.execute("SELECT estado FROM ordenes_compra WHERE id = 'ORD-001'")
+    estado_final = cursor.fetchone()[0]
+    assert estado_final == 'FACTURADA'
+    
+    # B. Debe existir una nueva factura
+    cursor.execute("SELECT monto_total FROM facturas WHERE orden_id = 'ORD-001'")
+    factura = cursor.fetchone()
+    
+    assert factura is not None, "Error: No se encontró la factura en la base de datos."
+    assert factura[0] == 119.00 # 100 (neto) + 19 (IVA) = 119.00 total
