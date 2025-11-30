@@ -9,49 +9,39 @@ on:
     branches:
       - main  # Despliegue de Previsualización (Preview) en cada PR
 
-
-
 jobs:
   ci_validation:
-    name: CI - Instalación y Pruebas
+    name: 🧪 CI - Instalación y Pruebas
     runs-on: ubuntu-latest
     
     steps:
       - name: 1. Checkout del Código
         uses: actions/checkout@v4
 
-      - name: 2. Configurar Node.js (Requerido por Vercel)
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: 3. Configurar Python 3.11
+      # 2. Configurar Python 3.11 (Se elimina el paso de Node.js)
+      - name: 2. Configurar Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           
-      - name: 4. Instalar Dependencias del Proyecto
+      - name: 3. Instalar Dependencias de Python
         run: |
-          echo "Instalando dependencias de Node.js..."
-          if [ -f package.json ]; then npm install; fi
-          echo "Instalando dependencias de Python..."
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           
-      - name: 5. Ejecutar Pruebas (Validación RF6)
+      - name: 4. Ejecutar Pruebas (Validación RF6)
         run: |
-          echo "Ejecutando pruebas unitarias..."
-          npm test
-          python -m pytest
+          echo "Ejecutando pruebas unitarias de Python..."
+          python -m pytest 
 
-      - name: 6. Construir el Proyecto (Build)
-        run: npm run build
+      - name: 5. Construir el Proyecto (Opcional para Python Serverless)
+        run: echo "Build de Python omitido/personalizado para Vercel."
         
   deploy_cd:
     name: 🚀 CD - Despliegue en Vercel
     runs-on: ubuntu-latest
     
-    # Solo se ejecuta si el job 'ci_validation' fue exitoso
+    # Se ejecuta solo si las pruebas de Python pasan
     needs: ci_validation 
     
     steps:
@@ -62,5 +52,5 @@ jobs:
         uses: vercel/actions@v1
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          # El argumento --prod se añade SÓLO si la rama es 'main' (Producción)
+          # El argumento --prod se añade SÓLO si la rama es 'main'
           vercel-args: ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
