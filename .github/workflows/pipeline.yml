@@ -57,8 +57,8 @@ jobs:
         uses: actions/checkout@v4
         
       - name: 2. Despliegue Automatizado a Vercel
-        uses: amondnet/vercel-action@v20
-        with:
+        uses: vercel/actions@v3
+        with: 
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           # El argumento --prod se añade SÓLO si la rama es 'main'
         env:
