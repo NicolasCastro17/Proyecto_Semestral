@@ -61,4 +61,5 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           # El argumento --prod se añade SÓLO si la rama es 'main'
-          vercel-args: ${{ github.ref == 'refs/heads/main' && '--prod --yes --name' || '' }}
+          vercel-project-name: "proyecto-semestral"
+          vercel-args: ${{ github.ref == 'refs/heads/main' && '--prod --yes' || '--yes' }}
