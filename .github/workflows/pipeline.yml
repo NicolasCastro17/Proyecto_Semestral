@@ -30,14 +30,18 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           pip install pytest
 
-      - name: Run tests
+      - name: 4. Ejecutar Pruebas (Validación RF6)
         run: |
-          if [ -d tests ]; then
-            pytest tests/
+          echo "Buscando pruebas unitarias..."
+          # Verifica si existe algún archivo de prueba con el patrón Pytest
+          if git ls-files -- 'tests/**/test_*.py' 'test_*.py' | grep -q .; then
+            echo "Tests encontrados. Ejecutando pytest..."
+            # Ejecuta el comando simple, asumiendo que ya instaló Pytest
+            pytest
           else
-            echo "No hay tests definidos, omitiendo."
+            echo "No se encontraron tests. Saltando pytest para permitir el despliegue (CD)."
           fi
-    
+          
       - name: 5. Construir el Proyecto (Opcional para Python Serverless)
         run: echo "Build de Python omitido/personalizado para Vercel."
         
