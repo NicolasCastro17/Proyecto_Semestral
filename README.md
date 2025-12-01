@@ -1,119 +1,147 @@
-
-# Proyecto Semestral: Sistema de Órdenes de Compra y Facturación (Entrega 1)
+# Proyecto Semestral: Sistema de Órdenes de Compra, Facturación y Envíos
 
 ## Descripción del Proyecto
 
-Este proyecto implementa la Base Funcional de un sistema de gestión para una empresa que administra órdenes de compra, facturación y envío.
+Sistema en consola desarrollado en Python que simula la gestión empresarial de órdenes de compra, facturación y envíos. Utiliza SQLite para el almacenamiento de datos y GitHub Actions para automatización de pruebas.
 
-Esta Entrega 1 (Sprint 1) se centra en la persistencia de datos y el control de acceso, cumpliendo con los siguientes módulos principales:
+### Funcionalidades Implementadas
 
-- **Módulo de Login (RF2)**: Control de acceso seguro al sistema.
-- **Módulo de Órdenes de Compra (RF1)**: Registro y almacenamiento de nuevas órdenes.
-- **Menú Principal (RF3)**: Navegación entre las secciones del sistema.
+- **RF1**: Registro de órdenes de compra  
+- **RF2**: Autenticación de usuarios  
+- **RF3**: Menú principal del sistema  
+- **RF4**: Emisión de facturas  
+- **RF5**: Registro de envío de productos  
+
+---
 
 ## Integrantes del Grupo
 
-- Richard Moreano
-- Nicolás Castro
+- Richard Moreano  
+- Nicolás Castro  
+
+---
 
 ## Estructura del Proyecto
 
-```
+```text
 Proyecto_Semestral/
 ├── README.md
 ├── .gitignore
+├── ci/
+│   └── pipeline.yml        # Automatización con GitHub Actions
 ├── database/
-│   └── proyecto.db          # Base de datos SQLite (se crea automáticamente)
-├── evidencias/              # Capturas de pantalla del proceso de desarrollo
-│   ├── branches.jpeg
-│   ├── commits 1.png
-│   ├── commit 2.jpeg
-│   ├── feature dev2.jpeg
-│   ├── issues.png
-│   ├── kanban.png
-│   ├── kanban done.jpeg
-│   ├── pr dev.jpeg
-│   ├── pr qa.jpeg
-│   └── prs abiertos.png
-└── src/                     # Código fuente del proyecto
-    ├── app.py              # Punto de entrada principal
-    ├── login.py            # Módulo de autenticación
-    ├── menu.py             # Menú principal del sistema
-    └── orden_compra.py     # Gestión de órdenes de compra
+│   └── proyecto.db         # Base de datos SQLite
+├── evidencias/             # Capturas de pantalla
+├── src/
+│   ├── app.py              # Punto de entrada principal
+│   ├── login.py            # Autenticación (RF2)
+│   ├── menu.py             # Menú principal (RF3)
+│   ├── orden_compra.py     # Órdenes de compra (RF1)
+│   ├── factura.py          # Emisión de facturas (RF4)
+│   └── envio.py            # Registro de envíos (RF5)
+└── tests/
+    └── test_rf4.py         # Pruebas automatizadas
 ```
 
-## Funcionalidades Implementadas
+---
 
-### 1. Sistema de Autenticación
-- Login seguro con usuario y contraseña
-- Contraseñas encriptadas usando SHA-256
-- Usuario por defecto: `admin` / `admin123`
-- Máximo 3 intentos de login
-- Entrada de contraseña oculta en terminal
+## Funcionalidades del Sistema
 
-### 2. Gestión de Órdenes de Compra
-- **Crear nueva orden**: Registro completo con datos del cliente y productos
-- **Listar órdenes**: Vista de todas las órdenes con información resumida
-- **Ver detalle**: Información completa de una orden específica
-- Estados de orden: `OC_CREADA`, `FACTURADA`, `DESPACHADA`
+### RF1 – Órdenes de Compra
+- Crear nuevas órdenes de compra
+- Registrar datos del cliente (nombre, dirección, teléfono, comuna, región)
+- Agregar productos con sus precios
+- Calcular el total automáticamente
+- Estados: `OC_CREADA` → `FACTURADA` → `DESPACHADA`
 
-### 3. Base de Datos
-- SQLite con creación automática de tablas
-- Tabla `usuarios`: Gestión de credenciales
-- Tabla `ordenes_compra`: Almacenamiento de órdenes con productos en formato JSON
+### RF2 – Autenticación
+- Sistema de login con usuario y contraseña
+- Contraseña hasheada con SHA-256
+- Máximo 3 intentos de acceso
+- **Credenciales por defecto**: Usuario `admin` / Contraseña `admin123`
 
-## Requisitos Técnicos
+### RF3 – Menú Principal
+Opciones disponibles:
+- Listar todas las órdenes de compra
+- Crear nueva orden
+- Ver detalle de orden específica
+- Emitir factura
+- Listar facturas
+- Registrar envío
+- Listar envíos
+- Cerrar sesión
 
-### Lenguaje y Base de Datos
-- **Lenguaje**: Python 3.6+
-- **Base de Datos**: SQLite (incluido en Python estándar)
+### RF4 – Emisión de Facturas
+- Seleccionar orden en estado `OC_CREADA`
+- Cálculo automático: Neto + IVA (19%) = Total
+- Actualización de estado a `FACTURADA`
+- Estado inicial de envío: `NO_DESPACHADO`
 
-### Librerías Utilizadas (Python estándar)
-- `sqlite3`: Conexión y manipulación de la base de datos
-- `hashlib`: Encriptación segura de contraseñas (SHA-256)
-- `getpass`: Entrada de contraseña sin mostrarla en terminal
-- `json`: Serialización de productos en la base de datos
-- `pathlib`: Manejo robusto de rutas de archivos
+### RF5 – Registro de Envío
+- Seleccionar factura existente
+- Crear registro en tabla `envios`
+- Actualizar estado a `DESPACHADO`
+- Flujo completo: OC → Factura → Envío
+
+---
+
+## Tecnologías Utilizadas
+
+- **Lenguaje**: Python 3
+- **Base de datos**: SQLite
+- **Librerías**:
+  - `sqlite3`: Gestión de base de datos
+  - `hashlib`: Hash de contraseñas
+  - `getpass`: Ocultamiento de contraseñas
+  - `json`: Serialización de productos
+  - `pathlib`: Manejo de rutas
+
+---
 
 ## Instalación y Ejecución
 
-### Prerrequisitos
-- Python 3.6 o superior instalado en el sistema
-- Terminal/CMD/PowerShell
+### 1. Clonar el repositorio
+```bash
+git clone https://github.com/NicolasCastro17/Proyecto_Semestral.git
+cd Proyecto_Semestral
+```
 
-### Pasos para ejecutar
+### 2. Ejecutar el programa
+```bash
+python src/app.py
+```
 
-1. **Clonar o descargar el proyecto**
-   ```bash
-   git clone https://github.com/NicolasCastro17/Proyecto_Semestral.git
-   cd Proyecto_Semestral
-   ```
+**Alternativa:**
+```bash
+python -m src.app
+```
 
-2. **Ejecutar el programa**
-   ```bash
-   python src/app.py
-   ```
-   
-   **Alternativa desde la raíz del proyecto:**
-   ```bash
-   python -m src.app
-   ```
+---
 
-### Credenciales por defecto
-- **Usuario**: `admin`
-- **Contraseña**: `admin123`
+## Pruebas Automatizadas
 
-## Uso del Sistema
+Ejecutar pruebas con pytest:
+```bash
+pytest
+```
 
-1. **Inicio de sesión**: Ingresa las credenciales por defecto
-2. **Menú principal**: Selecciona entre las opciones disponibles:
-   - `1`: Listar todas las órdenes de compra
-   - `2`: Crear una nueva orden de compra
-   - `3`: Ver detalle de una orden específica
-   - `4`: Volver al menú principal
-   - `5`: Cerrar sesión
+El archivo `tests/test_rf4.py` verifica:
+- Creación correcta de registros en tabla `facturas`
+- Cambio de estado de orden a `FACTURADA`
+- Cálculo correcto del IVA (19%)
 
-### Ejemplo de uso - Crear orden de compra:
+### Automatización con GitHub Actions
+
+El archivo `ci/pipeline.yml` ejecuta automáticamente las pruebas al hacer push, verificando:
+- Instalación de dependencias
+- Ejecución de tests
+- Integridad del código
+
+---
+
+## Ejemplo de Uso
+
+### Crear una orden de compra
 ```
 === Nueva Orden de Compra ===
 Número de OC: OC-001
@@ -130,9 +158,14 @@ Producto (ENTER para terminar): [ENTER]
 ✅ Orden registrada correctamente.
 ```
 
+---
+
 ## Notas Técnicas
 
 - La base de datos se crea automáticamente en la primera ejecución
-- Los archivos se organizan usando rutas relativas robustas
-- Las contraseñas se almacenan hasheadas, nunca en texto plano
-- El sistema maneja errores de entrada y validaciones básicas
+- Las contraseñas se almacenan hasheadas (SHA-256), nunca en texto plano
+- Sistema con validaciones y manejo de errores básico
+- Uso de rutas relativas para portabilidad
+
+---
+
